@@ -13,20 +13,17 @@ secrets:
   ##     https://docs.docker.com/reference/compose-file/secrets/
   ##     https://docs.docker.com/compose/how-tos/use-secrets/
   zulip__postgres_password:
-    ## Note that you need to do a manual `ALTER ROLE` query if you
-    ## change this on a system after booting the postgres container
-    ## the first time on a host.  Instructions are available in README.md.
-    environment: "ZULIP__POSTGRES_PASSWORD"
+    file: "./z_postgres_password.txt"
   zulip__memcached_password:
-    environment: "ZULIP__MEMCACHED_PASSWORD"
+    file: "./z_memcached_password.txt"
   zulip__rabbitmq_password:
-    environment: "ZULIP__RABBITMQ_PASSWORD"
+    file: "./z_rabbitmq_password.txt"
   zulip__redis_password:
-    environment: "ZULIP__REDIS_PASSWORD"
+    file: "./z_redis_password.txt"
   zulip__secret_key:
-    environment: "ZULIP__SECRET_KEY"
+    file: "./z_secret_key.txt"
   zulip__email_password:
-    environment: "ZULIP__EMAIL_PASSWORD"
+    file: "./z_email_password.txt"
 
 services:
   zulip:
@@ -37,8 +34,8 @@ services:
       ##     https://zulip.readthedocs.io/en/stable/production/settings.html
       ##
       ## The following two settings are required:
-      SETTING_EXTERNAL_HOST: "zulip.example.com"
-      SETTING_ZULIP_ADMINISTRATOR: "zulip-admin@example.com"
+      SETTING_EXTERNAL_HOST: "127.0.0.1.nip.io"
+      SETTING_ZULIP_ADMINISTRATOR: "admin@example.com"
 
       ## Most deploys do SSL termination outside of the container; Zulip
       ## defaults to only serving traffic over HTTP. If you'd like this
@@ -50,7 +47,7 @@ services:
       ##
       ## --> https://zulip.readthedocs.io/projects/docker/en/latest/how-to/compose-ssl.html
       ##
-      # CERTIFICATES: "certbot"
+      CERTIFICATES: "self-signed"
 
       ## If you're using a reverse proxy (as is required if you leave
       ## CERTIFICATES unset), you will also need to provide the comma-separated
@@ -87,7 +84,7 @@ services:
       ##
       ## --> https://zulip.readthedocs.io/projects/docker/en/latest/how-to/compose-authentication.html
       ##
-      # ZULIP_AUTH_BACKENDS: "EmailAuthBackend,GoogleAuthBackend"
+      ZULIP_AUTH_BACKENDS: "EmailAuthBackend"
 
       ## Uncomment this when configuring the mobile push notifications service.
       ## After setting these, you will need to register the server:
