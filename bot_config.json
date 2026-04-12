@@ -2,8 +2,8 @@
   "bots": [
     {
       "bot_name": "bot_amigable",
-      "email": "Kn3vSm1mJiUKEIoDZQ1IGtaCJDspkbXX-bot@localhost",
-      "api_key": "Kn3vSm1mJiUKEIoDZQ1IGtaCJDspkbXX",
+      "email": "aaa-bot@127.0.0.1.nip.io",
+      "api_key": "f68mFE6Ihur5eNW58V2b3jE7cPvqOsWw",
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
@@ -24,8 +24,8 @@
     },
     {
       "bot_name": "bot_tecnico",
-      "email": "PcuGRDnn5PxoK2nhen0ZqeyQqUKO2g9q-bot@localhost",
-      "api_key": "PcuGRDnn5PxoK2nhen0ZqeyQqUKO2g9q",
+      "email": "bbb-bot@127.0.0.1.nip.io",
+      "api_key": "39EB0ERDtAEPi63lMP77aEQ9NrUI2fp4",
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
@@ -46,8 +46,8 @@
     },
     {
       "bot_name": "bot_casual",
-      "email": "1bUYflu2kzmG4OuzCg8DtyWRJS5r5fAN-bot@localhost",
-      "api_key": "1bUYflu2kzmG4OuzCg8DtyWRJS5r5fAN",
+      "email": "ddd-bot@127.0.0.1.nip.io",
+      "api_key": "WqEhRLLFVBktfSjGdquLIJ84b52q3VB8",
       "server_url": "http://localhost:9991",
       "personality": "casual",
       "channels": [
@@ -68,8 +68,8 @@
     },
     {
       "bot_name": "bot_profesional",
-      "email": "MBlc4lZ9EognR87LLZXMRC2w6vLZco4c-bot@localhost",
-      "api_key": "MBlc4lZ9EognR87LLZXMRC2w6vLZco4c",
+      "email": "eee-bot@127.0.0.1.nip.io",
+      "api_key": "KKONeQT2YEC6q2fwENt0vSqwzrkDUmbT",
       "server_url": "http://localhost:9991",
       "personality": "professional",
       "channels": [
@@ -90,9 +90,9 @@
     },
     {
       "bot_name": "bot_alegro",
-      "email": "pQQ471XNoORzgtPkKOsK4hgjwD6V6N4v-bot@localhost",
-      "api_key": "pQQ471XNoORzgtPkKOsK4hgjwD6V6N4v",
-      "server_url": "http://localhost:9991",
+      "email": "fff-bot@127.0.0.1.nip.io",
+      "api_key": "WwxhtPfHGMySSuDWK1cYBRAzIuUXPLdv",
+      "server_url": "https://127.0.0.1.nip.io",
       "personality": "friendly",
       "channels": [
         {
@@ -107,13 +107,13 @@
       "message_interval": 32,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "llama3",
+      "ollama_model": "gemma2",
       "random_start_delay": true
     },
     {
       "bot_name": "bot_analista",
-      "email": "5KEsCyQAdbuM0Pe1WeDxU1LNxsU9lLuf-bot@localhost",
-      "api_key": "5KEsCyQAdbuM0Pe1WeDxU1LNxsU9lLuf",
+      "email": "ggg-bot@127.0.0.1.nip.io",
+      "api_key": "l71o3mHodGNViO3DEpQFYUKTKHA1PQsk",
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
@@ -134,8 +134,8 @@
     },
     {
       "bot_name": "bot_creativo",
-      "email": "8tFd8qXmyqY5qqaR3pUF7fgJdXqwsst4-bot@localhost",
-      "api_key": "8tFd8qXmyqY5qqaR3pUF7fgJdXqwsst4",
+      "email": "hhh-bot@127.0.0.1.nip.io",
+      "api_key": "lgCtjcfOlY4s2vVXRuBKDRszr4YlyJ8t",
       "server_url": "http://localhost:9991",
       "personality": "casual",
       "channels": [
@@ -156,8 +156,8 @@
     },
     {
       "bot_name": "bot_estratega",
-      "email": "QD8DUfgeKw7gukUECS3qQO7mLfKtAA7g-bot@localhost",
-      "api_key": "QD8DUfgeKw7gukUECS3qQO7mLfKtAA7g",
+      "email": "iii-bot@127.0.0.1.nip.io",
+      "api_key": "oNhze1f1pF7mWWfLsLllSU6qCX3pgnJ6",
       "server_url": "http://localhost:9991",
       "personality": "professional",
       "channels": [
@@ -178,8 +178,8 @@
     },
     {
       "bot_name": "bot_innovador",
-      "email": "I93sCG50csvZZd0Hl8NpBmCmnblZm9Gh-bot@localhost",
-      "api_key": "I93sCG50csvZZd0Hl8NpBmCmnblZm9Gh",
+      "email": "jjj-bot@127.0.0.1.nip.io",
+      "api_key": "xCr4tCZdbBUhPSjX594fOkt6U4a6qaRT",
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
@@ -200,8 +200,8 @@
     },
     {
       "bot_name": "bot_colaborador",
-      "email": "94tpMhbTDx7s5XzPPCdzevRsHqhONb72-bot@localhost",
-      "api_key": "94tpMhbTDx7s5XzPPCdzevRsHqhONb72",
+      "email": "kkk-bot@127.0.0.1.nip.io",
+      "api_key": "j23GPTvEPcbUw5dtqqy2gKAkEI8c3lvJ",
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
@@ -345,7 +345,7 @@
       "message_interval": 30,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false
     },
     {
@@ -367,7 +367,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 0
     },
@@ -390,7 +390,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 1
     },
@@ -413,7 +413,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 2
     },
@@ -436,7 +436,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 3
     },
@@ -459,7 +459,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 4
     },
@@ -482,7 +482,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 5
     },
@@ -505,7 +505,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 6
     },
@@ -528,7 +528,7 @@
       "message_interval": 8,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
+      "ollama_model": "gemma2:2b",
       "random_start_delay": false,
       "start_delay": 7
     },
@@ -542,6 +542,65 @@
         {
           "stream": "resumenes",
           "topic": "general"
+        }
+      ],
+      "message_interval": 0,
+      "use_ollama": false,
+      "random_start_delay": false
+    },
+    {
+      "bot_name": "zzz-bot",
+      "email": "zzz-bot@127.0.0.1.nip.io",
+      "api_key": "T4YKsnfXUDHFKzl5a3RAngwnhJHJnYRj",
+      "server_url": "https://localhost:443",
+      "personality": "technical",
+      "bot_type": "webhook_inbound",
+      "channels": [
+        {
+          "stream": "comercio",
+          "topic": "general"
+        },
+        {
+          "stream": "desarrollo",
+          "topic": "general"
+        },
+        {
+          "stream": "equipo",
+          "topic": "general"
+        },
+        {
+          "stream": "general",
+          "topic": "chat"
+        }
+      ],
+      "message_interval": 0,
+      "use_ollama": false,
+      "random_start_delay": false
+    },
+    {
+      "bot_name": "xxx-bot",
+      "email": "xxx-bot@127.0.0.1.nip.io",
+      "api_key": "78VuC7SvAL9WtCN5zoHuaCeK9Ehf5yga",
+      "server_url": "https://localhost:443",
+      "personality": "technical",
+      "bot_type": "webhook_outbound",
+      "webhook_token": "zj26mcSxoxqSra6pjwGzPftB5fz2CA8I",
+      "channels": [
+        {
+          "stream": "comercio",
+          "topic": "general"
+        },
+        {
+          "stream": "desarrollo",
+          "topic": "general"
+        },
+        {
+          "stream": "equipo",
+          "topic": "general"
+        },
+        {
+          "stream": "general",
+          "topic": "chat"
         }
       ],
       "message_interval": 0,
