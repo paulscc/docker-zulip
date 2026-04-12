@@ -527,26 +527,3 @@
       ],
       "message_interval": 8,
       "use_ollama": true,
-      "ollama_url": "http://localhost:11434",
-      "ollama_model": "gemma3:1b",
-      "random_start_delay": false,
-      "start_delay": 7
-    },
-    {
-      "bot_name": "summary_bot",
-      "email": "summary-bot@midt.127.0.0.1.nip.io",
-      "api_key": "SUMMARY_BOT_KEY",
-      "server_url": "https://midt.127.0.0.1.nip.io",
-      "personality": "professional",
-      "channels": [
-        {
-          "stream": "resumenes",
-          "topic": "general"
-        }
-      ],
-      "message_interval": 0,
-      "use_ollama": false,
-      "random_start_delay": false
-    }
-  ]
-}
