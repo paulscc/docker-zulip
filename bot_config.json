@@ -7,8 +7,14 @@
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
-        {"stream": "noticias", "topic": "general"},
-        {"stream": "proyectos", "topic": "chat"}
+        {
+          "stream": "noticias",
+          "topic": "general"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "chat"
+        }
       ],
       "message_interval": 30,
       "use_ollama": true,
@@ -18,13 +24,19 @@
     },
     {
       "bot_name": "bot_tecnico",
-      "email": "PcuGRDnn5PxoK2nhen0ZqeyQqUKO2g9q-bot@localhost", 
+      "email": "PcuGRDnn5PxoK2nhen0ZqeyQqUKO2g9q-bot@localhost",
       "api_key": "PcuGRDnn5PxoK2nhen0ZqeyQqUKO2g9q",
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
-        {"stream": "desarrollo", "topic": "soporte"},
-        {"stream": "proyectos", "topic": "updates"}
+        {
+          "stream": "desarrollo",
+          "topic": "soporte"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "updates"
+        }
       ],
       "message_interval": 35,
       "use_ollama": true,
@@ -35,12 +47,18 @@
     {
       "bot_name": "bot_casual",
       "email": "1bUYflu2kzmG4OuzCg8DtyWRJS5r5fAN-bot@localhost",
-      "api_key": "1bUYflu2kzmG4OuzCg8DtyWRJS5r5fAN", 
+      "api_key": "1bUYflu2kzmG4OuzCg8DtyWRJS5r5fAN",
       "server_url": "http://localhost:9991",
       "personality": "casual",
       "channels": [
-        {"stream": "noticias", "topic": "off-topic"},
-        {"stream": "proyectos", "topic": "entretenimiento"}
+        {
+          "stream": "noticias",
+          "topic": "off-topic"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "entretenimiento"
+        }
       ],
       "message_interval": 25,
       "use_ollama": true,
@@ -55,8 +73,14 @@
       "server_url": "http://localhost:9991",
       "personality": "professional",
       "channels": [
-        {"stream": "proyectos", "topic": "actualizaciones"},
-        {"stream": "desarrollo", "topic": "general"}
+        {
+          "stream": "proyectos",
+          "topic": "actualizaciones"
+        },
+        {
+          "stream": "desarrollo",
+          "topic": "general"
+        }
       ],
       "message_interval": 40,
       "use_ollama": true,
@@ -71,8 +95,14 @@
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
-        {"stream": "noticias", "topic": "alegria"},
-        {"stream": "proyectos", "topic": "celebracion"}
+        {
+          "stream": "noticias",
+          "topic": "alegria"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "celebracion"
+        }
       ],
       "message_interval": 32,
       "use_ollama": true,
@@ -87,8 +117,14 @@
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
-        {"stream": "desarrollo", "topic": "analisis"},
-        {"stream": "proyectos", "topic": "metrics"}
+        {
+          "stream": "desarrollo",
+          "topic": "analisis"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "metrics"
+        }
       ],
       "message_interval": 38,
       "use_ollama": true,
@@ -103,8 +139,14 @@
       "server_url": "http://localhost:9991",
       "personality": "casual",
       "channels": [
-        {"stream": "noticias", "topic": "ideas"},
-        {"stream": "proyectos", "topic": "innovacion"}
+        {
+          "stream": "noticias",
+          "topic": "ideas"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "innovacion"
+        }
       ],
       "message_interval": 28,
       "use_ollama": true,
@@ -119,8 +161,14 @@
       "server_url": "http://localhost:9991",
       "personality": "professional",
       "channels": [
-        {"stream": "proyectos", "topic": "estrategia"},
-        {"stream": "desarrollo", "topic": "planificacion"}
+        {
+          "stream": "proyectos",
+          "topic": "estrategia"
+        },
+        {
+          "stream": "desarrollo",
+          "topic": "planificacion"
+        }
       ],
       "message_interval": 45,
       "use_ollama": true,
@@ -135,8 +183,14 @@
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
-        {"stream": "desarrollo", "topic": "innovacion"},
-        {"stream": "proyectos", "topic": "futuro"}
+        {
+          "stream": "desarrollo",
+          "topic": "innovacion"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "futuro"
+        }
       ],
       "message_interval": 42,
       "use_ollama": true,
@@ -151,8 +205,14 @@
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
-        {"stream": "noticias", "topic": "equipo"},
-        {"stream": "proyectos", "topic": "colaboracion"}
+        {
+          "stream": "noticias",
+          "topic": "equipo"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "colaboracion"
+        }
       ],
       "message_interval": 33,
       "use_ollama": true,
@@ -167,8 +227,14 @@
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
-        {"stream": "desarrollo", "topic": "optimizacion"},
-        {"stream": "proyectos", "topic": "mejora"}
+        {
+          "stream": "desarrollo",
+          "topic": "optimizacion"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "mejora"
+        }
       ],
       "message_interval": 36,
       "use_ollama": true,
@@ -183,8 +249,14 @@
       "server_url": "http://localhost:9991",
       "personality": "casual",
       "channels": [
-        {"stream": "noticias", "topic": "motivacion"},
-        {"stream": "proyectos", "topic": "energia"}
+        {
+          "stream": "noticias",
+          "topic": "motivacion"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "energia"
+        }
       ],
       "message_interval": 26,
       "use_ollama": true,
@@ -199,8 +271,14 @@
       "server_url": "http://localhost:9991",
       "personality": "professional",
       "channels": [
-        {"stream": "desarrollo", "topic": "investigacion"},
-        {"stream": "proyectos", "topic": "descubrimientos"}
+        {
+          "stream": "desarrollo",
+          "topic": "investigacion"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "descubrimientos"
+        }
       ],
       "message_interval": 48,
       "use_ollama": true,
@@ -215,8 +293,14 @@
       "server_url": "http://localhost:9991",
       "personality": "friendly",
       "channels": [
-        {"stream": "noticias", "topic": "conexion"},
-        {"stream": "proyectos", "topic": "networking"}
+        {
+          "stream": "noticias",
+          "topic": "conexion"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "networking"
+        }
       ],
       "message_interval": 31,
       "use_ollama": true,
@@ -231,14 +315,56 @@
       "server_url": "http://localhost:9991",
       "personality": "technical",
       "channels": [
-        {"stream": "desarrollo", "topic": "soluciones"},
-        {"stream": "proyectos", "topic": "resolucion"}
+        {
+          "stream": "desarrollo",
+          "topic": "soluciones"
+        },
+        {
+          "stream": "proyectos",
+          "topic": "resolucion"
+        }
       ],
       "message_interval": 44,
       "use_ollama": true,
       "ollama_url": "http://localhost:11434",
       "ollama_model": "llama3",
       "random_start_delay": true
+    },
+    {
+      "bot_name": "bbbbb-bot",
+      "email": "bbbbb-bot@midt.127.0.0.1.nip.io",
+      "api_key": "nUf4sYDfwZQCR7xdBbFS9hCw3KXMsQhv",
+      "server_url": "https://midt.127.0.0.1.nip.io",
+      "personality": "friendly",
+      "channels": [
+        {
+          "stream": "general",
+          "topic": "chat"
+        }
+      ],
+      "message_interval": 30,
+      "use_ollama": true,
+      "ollama_url": "http://localhost:11434",
+      "ollama_model": "gemma3:1b",
+      "random_start_delay": false
+    },
+    {
+      "bot_name": "nnnnn-bot",
+      "email": "nnnnn-bot@midt.127.0.0.1.nip.io",
+      "api_key": "MBlc4lZ9EognR87LLZXMRC2w6vLZco4c",
+      "server_url": "https://midt.127.0.0.1.nip.io",
+      "personality": "friendly",
+      "channels": [
+        {
+          "stream": "general",
+          "topic": "chat"
+        }
+      ],
+      "message_interval": 30,
+      "use_ollama": true,
+      "ollama_url": "http://localhost:11434",
+      "ollama_model": "gemma3:1b",
+      "random_start_delay": false
     }
   ]
 }

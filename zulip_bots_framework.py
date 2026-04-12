@@ -9,8 +9,13 @@ import time
 import random
 import threading
 import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 from typing import Dict, List, Any
 from zulip import Client
+
+# Deshabilitar advertencias SSL
+urllib3.disable_warnings(InsecureRequestWarning)
 
 class ZulipBot:
     """Base class for Zulip bots"""
@@ -39,11 +44,19 @@ class ZulipBot:
     def _init_client(self):
         """Initialize Zulip client"""
         if self.client is None:
-            self.client = Client(
-                email=self.email,
-                api_key=self.api_key,
-                site=self.server_url
-            )
+            # Patch requests to ignore SSL verification temporarily
+            original_request = requests.request
+            requests.request = lambda *args, **kwargs: original_request(*args, **kwargs, verify=False)
+            
+            try:
+                self.client = Client(
+                    email=self.email,
+                    api_key=self.api_key,
+                    site=self.server_url
+                )
+            finally:
+                # Restore original request method
+                requests.request = original_request
         
     def usage(self) -> str:
         """Return bot usage description"""
