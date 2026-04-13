@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Title Improver - Zulip AI Features</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .topic-card {
+            transition: all 0.3s ease;
+        }
+        .topic-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .drift-indicator {
+            transition: all 0.3s ease;
+        }
+        .drift-high {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .drift-medium {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .drift-low {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        .suggestion-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .suggestion-card:hover {
+            transform: translateX(5px);
+            border-color: #3b82f6;
+        }
+        .keyword-tag {
+            transition: all 0.2s ease;
+        }
+        .keyword-tag:hover {
+            transform: scale(1.05);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .evolution-timeline {
+            position: relative;
+        }
+        .evolution-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-purple-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-brain text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Topic Title Improver</h1>
+                        <p class="text-purple-100 text-sm">Detección de conversaciones desviadas y sugerencias de títulos</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="connection-status" class="flex items-center">
+                        <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                        <span class="text-sm">Conectado</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Topic Analysis Input -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-search mr-2 text-purple-600"></i>
+                Analizar Tema
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label for="stream-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Canal (Stream)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="stream-input" 
+                        placeholder="general"
+                        value="general"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                </div>
+                
+                <div>
+                    <label for="topic-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tema (Topic)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="topic-input" 
+                        placeholder="nombre-del-tema"
+                        value="proyecto-actualizacion"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button 
+                    id="analyze-topic-btn"
+                    class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition duration-200 flex items-center"
+                >
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Analizar Tema
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <section id="loading-section" class="hidden bg-white rounded-lg shadow-md p-8 mb-8">
+            <div class="flex flex-col items-center justify-center">
+                <div class="loading-spinner mb-4"></div>
+                <p class="text-gray-600">Analizando conversación con IA...</p>
+                <p class="text-sm text-gray-500 mt-2">Detectando deriva de tema y generando sugerencias</p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="hidden fade-in">
+            <!-- Drift Analysis Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-route mr-2 text-orange-600"></i>
+                    Análisis de Deriva del Tema
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Puntaje de Deriva</span>
+                                <span id="drift-score" class="text-sm font-bold">0.00</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="drift-bar" class="h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="drift-status" class="p-4 rounded-lg">
+                            <!-- Drift status will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">Evolución del Tema</h4>
+                        <div id="topic-evolution" class="space-y-2">
+                            <!-- Topic evolution will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title Suggestions -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-600"></i>
+                    Sugerencias de Títulos Mejorados
+                </h3>
+                
+                <div id="title-suggestions" class="grid md:grid-cols-2 gap-4">
+                    <!-- Title suggestions will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Keywords Analysis -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-tags mr-2 text-blue-600"></i>
+                    Análisis de Palabras Clave
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">Palabras Clave Principales</h4>
+                        <div id="top-keywords" class="flex flex-wrap gap-2">
+                            <!-- Keywords will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">Estadísticas del Análisis</h4>
+                        <div id="analysis-stats" class="space-y-2">
+                            <!-- Stats will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topic Timeline -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-clock mr-2 text-green-600"></i>
+                    Línea de Tiempo de la Conversación
+                </h3>
+                
+                <div id="topic-timeline" class="evolution-timeline">
+                    <!-- Timeline will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Section -->
+        <section id="error-section" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-red-800">Error</h3>
+                    <p id="error-message" class="text-red-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configuration Section -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-cog mr-2 text-gray-600"></i>
+                Configuración de Análisis
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Umbral de Deriva
+                    </label>
+                    <input 
+                        type="range" 
+                        min="0.1" 
+                        max="1.0" 
+                        step="0.1" 
+                        value="0.7"
+                        class="w-full"
+                        id="drift-threshold"
+                    >
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Bajo</span>
+                        <span id="threshold-value">0.7</span>
+                        <span>Alto</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Mensajes Mínimos para Análisis
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>5 mensajes</option>
+                        <option selected>10 mensajes</option>
+                        <option>20 mensajes</option>
+                        <option>50 mensajes</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Ventana de Tiempo
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Últimas 6 horas</option>
+                        <option>Últimas 12 horas</option>
+                        <option selected>Últimas 24 horas</option>
+                        <option>Última semana</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar Configuración
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">
+                <i class="fas fa-brain mr-2"></i>
+                Topic Title Improver - Powered by AI
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Socket.io connection for real-time updates
+        const socket = io();
+        
+        // DOM elements
+        const analyzeBtn = document.getElementById('analyze-topic-btn');
+        const loadingSection = document.getElementById('loading-section');
+        const resultsSection = document.getElementById('results-section');
+        const errorSection = document.getElementById('error-section');
+        const streamInput = document.getElementById('stream-input');
+        const topicInput = document.getElementById('topic-input');
+        const driftThreshold = document.getElementById('drift-threshold');
+        const thresholdValue = document.getElementById('threshold-value');
+
+        // Event listeners
+        analyzeBtn.addEventListener('click', analyzeTopic);
+        driftThreshold.addEventListener('input', (e) => {
+            thresholdValue.textContent = e.target.value;
+        });
+        
+        // Socket.io event listeners
+        socket.on('connect', () => {
+            updateConnectionStatus(true);
+        });
+        
+        socket.on('disconnect', () => {
+            updateConnectionStatus(false);
+        });
+
+        function analyzeTopic() {
+            const stream = streamInput.value.trim();
+            const topic = topicInput.value.trim();
+            
+            if (!stream || !topic) {
+                showError('Por favor, ingresa tanto el canal como el tema.');
+                return;
+            }
+            
+            // Show loading
+            showLoading();
+            
+            // Call API
+            fetch('/api/topics/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    stream: stream,
+                    topic: topic
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Error al analizar el tema: ' + error.message);
+            });
+        }
+
+        function showLoading() {
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analizando...';
+            loadingSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+        }
+
+        function hideLoading() {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = '<i class="fas fa-chart-line mr-2"></i>Analizar Tema';
+            loadingSection.classList.add('hidden');
+        }
+
+        function showResults(data) {
+            resultsSection.classList.remove('hidden');
+            errorSection.classList.add('hidden');
+            
+            const analysis = data.analysis;
+            const driftAnalysis = analysis.drift_analysis;
+            
+            // Show drift analysis
+            showDriftAnalysis(driftAnalysis);
+            
+            // Show title suggestions
+            showTitleSuggestions(analysis.title_suggestions);
+            
+            // Show keywords
+            showKeywords(analysis.keywords);
+            
+            // Show timeline
+            showTimeline(analysis.keywords.topic_evolution);
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showDriftAnalysis(driftAnalysis) {
+            const driftScore = driftAnalysis.drift_score || 0;
+            const hasDrift = driftAnalysis.has_drift || false;
+            
+            // Update drift score
+            document.getElementById('drift-score').textContent = driftScore.toFixed(2);
+            
+            // Update drift bar
+            const driftBar = document.getElementById('drift-bar');
+            driftBar.style.width = `${driftScore * 100}%`;
+            
+            // Set color based on drift level
+            if (driftScore > 0.7) {
+                driftBar.className = 'h-3 rounded-full transition-all duration-500 drift-high';
+            } else if (driftScore > 0.4) {
+                driftBar.className = 'h-3 rounded-full transition-all duration-500 drift-medium';
+            } else {
+                driftBar.className = 'h-3 rounded-full transition-all duration-500 drift-low';
+            }
+            
+            // Show drift status
+            const driftStatus = document.getElementById('drift-status');
+            if (hasDrift) {
+                driftStatus.className = 'p-4 rounded-lg bg-red-50 border border-red-200';
+                driftStatus.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                        <div>
+                            <h4 class="font-semibold text-red-800">Deriva de Tema Detectada</h4>
+                            <p class="text-red-700 text-sm mt-1">${driftAnalysis.reason}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                driftStatus.className = 'p-4 rounded-lg bg-green-50 border border-green-200';
+                driftStatus.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                        <div>
+                            <h4 class="font-semibold text-green-800">Sin Deriva Significativa</h4>
+                            <p class="text-green-700 text-sm mt-1">${driftAnalysis.reason}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Show topic evolution
+            const evolution = document.getElementById('topic-evolution');
+            if (driftAnalysis.new_topics && driftAnalysis.original_topics) {
+                evolution.innerHTML = `
+                    <div class="mb-3">
+                        <h5 class="text-sm font-medium text-gray-600 mb-2">Temas Originales:</h5>
+                        <div class="flex flex-wrap gap-1">
+                            ${driftAnalysis.original_topics.map(topic => 
+                                `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">${topic}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-medium text-gray-600 mb-2">Nuevos Temas:</h5>
+                        <div class="flex flex-wrap gap-1">
+                            ${driftAnalysis.new_topics.map(topic => 
+                                `<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded">${topic}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showTitleSuggestions(suggestions) {
+            const container = document.getElementById('title-suggestions');
+            
+            if (!suggestions || suggestions.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-2">No hay sugerencias de títulos disponibles.</p>';
+                return;
+            }
+            
+            container.innerHTML = suggestions.map((suggestion, index) => `
+                <div class="suggestion-card bg-gray-50 p-4 rounded-lg border border-gray-200" onclick="selectTitle('${suggestion.title}')">
+                    <div class="flex items-start justify-between mb-2">
+                        <h4 class="font-semibold text-gray-800">${suggestion.title}</h4>
+                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                            ${(suggestion.confidence * 100).toFixed(0)}% confianza
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${suggestion.reason}</p>
+                    <button class="w-full bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition">
+                        <i class="fas fa-check mr-1"></i>
+                        Usar este título
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function showKeywords(keywordsData) {
+            const topKeywords = document.getElementById('top-keywords');
+            const analysisStats = document.getElementById('analysis-stats');
+            
+            // Show top keywords
+            if (keywordsData.keywords && keywordsData.keywords.length > 0) {
+                topKeywords.innerHTML = keywordsData.keywords.slice(0, 10).map((keyword, index) => {
+                    const size = Math.max(0.8, Math.min(1.5, 1 + (keyword[1] / keywordsData.keywords[0][1]) * 0.5));
+                    return `
+                        <span class="keyword-tag px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm" 
+                              style="font-size: ${size}rem; opacity: ${0.7 + (index * 0.03)}">
+                            ${keyword[0]} (${keyword[1]})
+                        </span>
+                    `;
+                }).join('');
+            } else {
+                topKeywords.innerHTML = '<p class="text-gray-500">No se encontraron palabras clave.</p>';
+            }
+            
+            // Show statistics
+            analysisStats.innerHTML = `
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Total de palabras:</span>
+                    <span class="font-medium">${keywordsData.total_words || 0}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Palabras únicas:</span>
+                    <span class="font-medium">${keywordsData.unique_words || 0}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Diversidad léxica:</span>
+                    <span class="font-medium">${keywordsData.total_words ? 
+                        ((keywordsData.unique_words / keywordsData.total_words) * 100).toFixed(1) : 0}%</span>
+                </div>
+            `;
+        }
+
+        function showTimeline(evolution) {
+            const timeline = document.getElementById('topic-timeline');
+            
+            if (!evolution || evolution.length === 0) {
+                timeline.innerHTML = '<p class="text-gray-500">No hay datos de evolución disponibles.</p>';
+                return;
+            }
+            
+            timeline.innerHTML = evolution.map((period, index) => `
+                <div class="flex items-start mb-6 relative">
+                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold z-10">
+                        ${index + 1}
+                    </div>
+                    <div class="ml-6 flex-1">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">Período ${period.time_period}</h4>
+                                <span class="text-sm text-gray-500">${period.message_count} mensajes</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${period.top_keywords.map(keyword => 
+                                    `<span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">${keyword[0]}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectTitle(title) {
+            // In a real implementation, this would call the API to update the topic
+            alert(`Título seleccionado: "${title}"\n\nEn una implementación real, esto actualizaría el tema en Zulip.`);
+        }
+
+        function showError(message) {
+            errorSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            if (connected) {
+                statusElement.innerHTML = `
+                    <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                    <span class="text-sm">Conectado</span>
+                `;
+            } else {
+                statusElement.innerHTML = `
+                    <span class="w-3 h-3 bg-red-400 rounded-full mr-2"></span>
+                    <span class="text-sm">Desconectado</span>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default values
+            thresholdValue.textContent = driftThreshold.value;
+        });
+    </script>
+</body>
+</html>

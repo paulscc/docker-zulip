@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Recap - Zulip AI Features</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .message-item {
+            transition: all 0.3s ease;
+        }
+        .message-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-comment-dots text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">Message Recap</h1>
+                        <p class="text-blue-100 text-sm">Resúmenes inteligentes de mensajes no leídos</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="connection-status" class="flex items-center">
+                        <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                        <span class="text-sm">Conectado</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- User Input Section -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-user-circle mr-2 text-blue-600"></i>
+                Generar Resumen de Mensajes
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label for="user-email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email del Usuario
+                    </label>
+                    <input 
+                        type="email" 
+                        id="user-email" 
+                        placeholder="usuario@ejemplo.com"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+                
+                <div>
+                    <label for="stream-select" class="block text-sm font-medium text-gray-700 mb-2">
+                        Canal (Opcional)
+                    </label>
+                    <select 
+                        id="stream-select"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                        <option value="">Todos los canales</option>
+                        <option value="general">general</option>
+                        <option value="random">random</option>
+                        <option value="announcements">announcements</option>
+                        <option value="development">development</option>
+                        <option value="support">support</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end">
+                <button 
+                    id="generate-recap-btn"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center"
+                >
+                    <i class="fas fa-magic mr-2"></i>
+                    Generar Resumen
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <section id="loading-section" class="hidden bg-white rounded-lg shadow-md p-8 mb-8">
+            <div class="flex flex-col items-center justify-center">
+                <div class="loading-spinner mb-4"></div>
+                <p class="text-gray-600">Generando resumen con IA...</p>
+                <p class="text-sm text-gray-500 mt-2">Esto puede tomar unos segundos</p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="hidden fade-in">
+            <!-- Summary Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-file-alt mr-2 text-green-600"></i>
+                    Resumen General
+                </h3>
+                <div id="summary-content" class="prose max-w-none">
+                    <!-- Summary will be inserted here -->
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                    <span id="llm-used" class="text-sm text-gray-500"></span>
+                    <span id="message-count" class="text-sm text-gray-500"></span>
+                </div>
+            </div>
+
+            <!-- Key Points -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-key mr-2 text-yellow-600"></i>
+                    Puntos Clave
+                </h3>
+                <ul id="key-points" class="space-y-2">
+                    <!-- Key points will be inserted here -->
+                </ul>
+            </div>
+
+            <!-- Actions Needed -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-tasks mr-2 text-red-600"></i>
+                    Acciones Requeridas
+                </h3>
+                <ul id="actions-needed" class="space-y-2">
+                    <!-- Actions will be inserted here -->
+                </ul>
+            </div>
+
+            <!-- Messages List -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                    <i class="fas fa-envelope mr-2 text-blue-600"></i>
+                    Mensajes Recientes
+                </h3>
+                <div id="messages-list" class="space-y-3">
+                    <!-- Messages will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Error Section -->
+        <section id="error-section" class="hidden bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl mr-3"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-red-800">Error</h3>
+                    <p id="error-message" class="text-red-700"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preferences Section -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">
+                <i class="fas fa-cog mr-2 text-gray-600"></i>
+                Preferencias de Resumen
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Frecuencia de Resúmenes
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Automático (cuando hay mensajes nuevos)</option>
+                        <option>Cada hora</option>
+                        <option>Cada 6 horas</option>
+                        <option>Diario</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Modelo de IA
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Gemini Pro (Recomendado)</option>
+                        <option>Gemma2 (Local)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Cantidad de Mensajes
+                    </label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option>Últimos 10 mensajes</option>
+                        <option>Últimos 25 mensajes</option>
+                        <option>Últimos 50 mensajes</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Canales a Monitorear
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" checked class="mr-2">
+                            <span>general</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" checked class="mr-2">
+                            <span>random</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>announcements</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar Preferencias
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">
+                <i class="fas fa-robot mr-2"></i>
+                Message Recap - Powered by AI
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Socket.io connection for real-time updates
+        const socket = io();
+        
+        // DOM elements
+        const generateBtn = document.getElementById('generate-recap-btn');
+        const loadingSection = document.getElementById('loading-section');
+        const resultsSection = document.getElementById('results-section');
+        const errorSection = document.getElementById('error-section');
+        const userEmailInput = document.getElementById('user-email');
+        const streamSelect = document.getElementById('stream-select');
+
+        // Event listeners
+        generateBtn.addEventListener('click', generateRecap);
+        
+        // Socket.io event listeners
+        socket.on('connect', () => {
+            updateConnectionStatus(true);
+        });
+        
+        socket.on('disconnect', () => {
+            updateConnectionStatus(false);
+        });
+        
+        socket.on('new_message', (data) => {
+            console.log('New message received:', data);
+            // Handle real-time message updates if needed
+        });
+
+        function generateRecap() {
+            const userEmail = userEmailInput.value.trim();
+            const stream = streamSelect.value;
+            
+            if (!userEmail) {
+                showError('Por favor, ingresa tu email de usuario.');
+                return;
+            }
+            
+            // Show loading
+            showLoading();
+            
+            // Call API
+            fetch('/api/recap/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_email: userEmail,
+                    stream: stream || null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showResults(data);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Error al generar el resumen: ' + error.message);
+            });
+        }
+
+        function showLoading() {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generando...';
+            loadingSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+        }
+
+        function hideLoading() {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i>Generar Resumen';
+            loadingSection.classList.add('hidden');
+        }
+
+        function showResults(data) {
+            resultsSection.classList.remove('hidden');
+            errorSection.classList.add('hidden');
+            
+            // Show summary
+            const summaryContent = document.getElementById('summary-content');
+            summaryContent.innerHTML = `
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-gray-800 leading-relaxed">${data.recap.summary}</p>
+                </div>
+            `;
+            
+            // Show LLM used
+            const llmUsed = document.getElementById('llm-used');
+            llmUsed.innerHTML = `<i class="fas fa-brain mr-1"></i>Generado con: ${data.recap.llm_used || 'Desconocido'}`;
+            
+            // Show message count
+            const messageCount = document.getElementById('message-count');
+            messageCount.innerHTML = `<i class="fas fa-envelope mr-1"></i>${data.message_count} mensajes analizados`;
+            
+            // Show key points
+            const keyPoints = document.getElementById('key-points');
+            if (data.recap.key_points && data.recap.key_points.length > 0) {
+                keyPoints.innerHTML = data.recap.key_points.map(point => `
+                    <li class="flex items-start">
+                        <i class="fas fa-chevron-right text-yellow-500 mt-1 mr-2"></i>
+                        <span class="text-gray-700">${point}</span>
+                    </li>
+                `).join('');
+            } else {
+                keyPoints.innerHTML = '<li class="text-gray-500">No se identificaron puntos clave.</li>';
+            }
+            
+            // Show actions needed
+            const actionsNeeded = document.getElementById('actions-needed');
+            if (data.recap.actions_needed && data.recap.actions_needed.length > 0) {
+                actionsNeeded.innerHTML = data.recap.actions_needed.map(action => `
+                    <li class="flex items-start">
+                        <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                        <span class="text-gray-700">${action}</span>
+                    </li>
+                `).join('');
+            } else {
+                actionsNeeded.innerHTML = '<li class="text-gray-500">No se requieren acciones inmediatas.</li>';
+            }
+            
+            // Show messages
+            const messagesList = document.getElementById('messages-list');
+            if (data.messages && data.messages.length > 0) {
+                messagesList.innerHTML = data.messages.map(msg => `
+                    <div class="message-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                                        ${msg.sender_full_name ? msg.sender_full_name.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">${msg.sender_full_name || 'Unknown'}</h4>
+                                        <p class="text-xs text-gray-500">${new Date(msg.timestamp * 1000).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700 mb-2">${msg.content}</p>
+                                ${msg.direct_link ? `
+                                    <a href="${msg.direct_link}" target="_blank" class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm">
+                                        <i class="fas fa-external-link-alt mr-1"></i>
+                                        Ver mensaje original
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                messagesList.innerHTML = '<p class="text-gray-500">No hay mensajes para mostrar.</p>';
+            }
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            errorSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            if (connected) {
+                statusElement.innerHTML = `
+                    <span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                    <span class="text-sm">Conectado</span>
+                `;
+            } else {
+                statusElement.innerHTML = `
+                    <span class="w-3 h-3 bg-red-400 rounded-full mr-2"></span>
+                    <span class="text-sm">Desconectado</span>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default user email (for demo purposes)
+            userEmailInput.value = 'demo@example.com';
+        });
+    </script>
+</body>
+</html>
