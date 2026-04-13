@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kafka Realtime</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+        .box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            width: 45%;
+            border-radius: 10px;
+            background: #f5f5f5;
+            height: 400px;
+            overflow-y: auto;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Topic 1</h2>
+    <div id="zulip-summaries"></div>
+</div>
+
+<div class="box">
+    <h2>Topic 2</h2>
+    <div id="zulip-unread-messages"></div>
+</div>
+
+<script>
+
+const socket = io();
+
+socket.on("new_message", function(data) {
+    console.log("TIPO:", typeof data.message);
+    console.log("DATA:", data.message);
+
+    const container = document.getElementById(data.topic);
+
+    if (container) {
+        const p = document.createElement("pre");
+
+        if (typeof data.message === "object") {
+            p.textContent = JSON.stringify(data.message, null, 2);
+        } else {
+            p.textContent = data.message;
+        }
+
+        container.prepend(p);
+    } else {
+        console.warn("No existe div para:", data.topic);
+    }
+});
+</script>
+
+</body>
+</html>

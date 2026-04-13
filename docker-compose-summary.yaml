@@ -14,7 +14,7 @@ services:
       - ZULIP_EMAIL=${SUMMARY_BOT_EMAIL}
       - ZULIP_API_KEY=${SUMMARY_BOT_API_KEY}
       - ZULIP_SERVER=${ZULIP_SERVER_URL}
-      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_SERVERS=localhost:9092
     depends_on:
       - kafka
       - zookeeper
@@ -33,7 +33,7 @@ services:
     container_name: summary-consumer
     restart: unless-stopped
     environment:
-      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_SERVERS=localhost:9092
       - GEMINI_API_KEY_FILE=/run/secrets/gemikey
       - OLLAMA_URL=http://host.docker.internal:11434
       - USE_OLLAMA=true
@@ -61,7 +61,7 @@ services:
       - ZULIP_EMAIL=${SUMMARY_BOT_EMAIL}
       - ZULIP_API_KEY=${SUMMARY_BOT_API_KEY}
       - ZULIP_SERVER=${ZULIP_SERVER_URL}
-      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_SERVERS=localhost:9092
     depends_on:
       - kafka
       - zookeeper

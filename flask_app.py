@@ -8,7 +8,8 @@ from collections import deque
 app = Flask(__name__)
 
 # Global storage for messages (in production, use a proper database)
-messages = deque(maxlen=100)  # Keep last 100 messages
+summaries_messages = deque(maxlen=100)  # Keep last 100 summary messages
+unread_messages = deque(maxlen=100)    # Keep last 100 unread messages
 consumer_thread = None
 stop_consumer = threading.Event()
 
@@ -28,7 +29,7 @@ class KafkaMessageConsumer:
                 value_deserializer=lambda x: json.loads(x.decode('utf-8')),
                 auto_offset_reset='earliest',  # Start from the beginning of topics
                 enable_auto_commit=True,
-                group_id='flask_web_group'
+                group_id='flask_web_group_full_history'
             )
             
             self.running = True
@@ -39,7 +40,7 @@ class KafkaMessageConsumer:
                 if stop_consumer.is_set():
                     break
                 
-                # Add message to our deque
+                # Add message to appropriate deque based on topic
                 message_data = {
                     'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
                     'content': message.value,
@@ -47,8 +48,15 @@ class KafkaMessageConsumer:
                     'partition': message.partition,
                     'offset': message.offset
                 }
-                messages.append(message_data)
-                print(f"Received message: {message_data}")
+                
+                if message.topic == 'zulip-summaries':
+                    summaries_messages.append(message_data)
+                    print(f"Added to summaries_messages. Total: {len(summaries_messages)}")
+                elif message.topic == 'zulip-unread-messages':
+                    unread_messages.append(message_data)
+                    print(f"Added to unread_messages. Total: {len(unread_messages)}")
+                
+                print(f"Received message from {message.topic}: {message_data}")
                 
         except Exception as e:
             print(f"Error in Kafka consumer: {e}")
@@ -76,10 +84,17 @@ def index():
     """Main page to display messages"""
     return render_template('index.html')
 
-@app.route('/api/messages')
-def get_messages():
-    """API endpoint to get recent messages"""
-    return jsonify(list(messages))
+@app.route('/api/summaries')
+def get_summaries():
+    """API endpoint to get summary messages"""
+    print(f"API /api/summaries called. summaries_messages length: {len(summaries_messages)}")
+    return jsonify(list(summaries_messages))
+
+@app.route('/api/unread')
+def get_unread():
+    """API endpoint to get unread messages"""
+    print(f"API /api/unread called. unread_messages length: {len(unread_messages)}")
+    return jsonify(list(unread_messages))
 
 @app.route('/api/health')
 def health_check():
@@ -87,7 +102,8 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'kafka_consumer_running': kafka_consumer.running,
-        'total_messages': len(messages)
+        'total_summaries': len(summaries_messages),
+        'total_unread': len(unread_messages)
     })
 
 @app.teardown_appcontext
