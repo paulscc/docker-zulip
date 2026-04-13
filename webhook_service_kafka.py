@@ -8,9 +8,9 @@ from flask import Flask, request, jsonify
 import requests
 import json
 import logging
-import subprocess
 from datetime import datetime
 from typing import Dict, List, Any
+from kafka import KafkaProducer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -29,6 +29,18 @@ class KafkaWebhookService:
         self.kafka_topic_summaries = "zulip-summaries"
         self.ollama_url = "http://localhost:11434"
         self.ollama_model = "gemma2:2b"
+        
+        # Initialize Kafka producer
+        try:
+            self.producer = KafkaProducer(
+                bootstrap_servers=self.kafka_bootstrap_servers,
+                value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                key_serializer=lambda k: k.encode('utf-8') if k else None
+            )
+            logger.info("Kafka producer initialized successfully in webhook service")
+        except Exception as e:
+            logger.error(f"Error initializing Kafka producer in webhook service: {e}")
+            self.producer = None
         
     def load_config(self, config_file: str) -> Dict:
         """Load bot configuration from JSON file"""
@@ -224,25 +236,41 @@ def send_unread_to_kafka():
             "webhook_token": webhook_service.outgoing_bot.get("webhook_token")
         }
         
-        # Send to Kafka
-        message_json = json.dumps(payload)
-        cmd = [
-            "docker", "exec", "opcion2-kafka-1",
-            "bash", "-c", f"echo '{message_json}' | kafka-console-producer --bootstrap-server localhost:9092 --topic {webhook_service.kafka_topic_unread}"
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        
-        if result.returncode == 0:
-            return jsonify({
-                "status": "success",
-                "message": f"Unread messages sent to Kafka topic '{webhook_service.kafka_topic_unread}'",
-                "kafka_topic": webhook_service.kafka_topic_unread
-            }), 200
+        # Send to Kafka using KafkaProducer
+        if webhook_service.producer:
+            try:
+                key = f"{data.get('stream')}-{data.get('topic')}"
+                
+                future = webhook_service.producer.send(
+                    webhook_service.kafka_topic_unread,
+                    key=key,
+                    value=payload
+                )
+                
+                # Wait for the message to be sent
+                record_metadata = future.get(timeout=30)
+                
+                logger.info(f"Unread messages sent to Kafka topic '{webhook_service.kafka_topic_unread}'")
+                logger.info(f"Topic: {record_metadata.topic}, Partition: {record_metadata.partition}, Offset: {record_metadata.offset}")
+                
+                return jsonify({
+                    "kafka_topic": webhook_service.kafka_topic_unread,
+                    "message": f"Unread messages sent to Kafka topic '{webhook_service.kafka_topic_unread}'",
+                    "status": "success",
+                    "partition": record_metadata.partition,
+                    "offset": record_metadata.offset
+                })
+                
+            except Exception as e:
+                logger.error(f"Error sending to Kafka: {e}")
+                return jsonify({
+                    "status": "error",
+                    "message": f"Error sending to Kafka: {str(e)}"
+                }), 500
         else:
             return jsonify({
                 "status": "error",
-                "message": f"Error sending to Kafka: {result.stderr}"
+                "message": "Kafka producer not initialized"
             }), 500
             
     except Exception as e:
