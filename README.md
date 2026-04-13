@@ -35,13 +35,48 @@ cd <DIRECTORIO_DEL_PROYECTO>
 ```
 
 ### 2. Configurar Variables de Entorno
-Crea un archivo `.env` con las siguientes variables:
+
+#### Opción A: Configuración Automática (Recomendada)
+
+Usa el script automático para configurar todos los bots:
 
 ```bash
-# Configuración de Zulip
-ZULIP_EMAIL=tu-bot@zulip.example.com
-ZULIP_API_KEY=tu-api-key
-ZULIP_SERVER=https://zulip.example.com
+python setup_bot_keys.py
+```
+
+El script te guiará paso a paso para:
+- Crear las API keys en Zulip
+- Configurar los 4 bots principales
+- Generar el archivo `.env` automáticamente
+
+#### Opción B: Configuración Manual
+
+Copia la plantilla y edita manualmente:
+
+```bash
+cp .env.example .env
+# Edita .env con tus configuraciones
+```
+
+**Variables principales requeridas:**
+
+```bash
+# Bots de Zulip (4 bots principales)
+SUMMARY_BOT_EMAIL=summary-bot@tu-servidor.zulipchat.com
+SUMMARY_BOT_API_KEY=tu-api-key-aqui
+SUMMARY_BOT_SERVER=https://tu-servidor.zulipchat.com
+
+TOPIC_ANALYZER_BOT_EMAIL=topic-analyzer-bot@tu-servidor.zulipchat.com
+TOPIC_ANALYZER_BOT_API_KEY=tu-api-key-aqui
+TOPIC_ANALYZER_BOT_SERVER=https://tu-servidor.zulipchat.com
+
+FOCUS_BOT_EMAIL=focus-monitor-bot@tu-servidor.zulipchat.com
+FOCUS_BOT_API_KEY=tu-api-key-aqui
+FOCUS_BOT_SERVER=https://tu-servidor.zulipchat.com
+
+WEBHOOK_BOT_EMAIL=webhook-bot@tu-servidor.zulipchat.com
+WEBHOOK_BOT_API_KEY=tu-api-key-aqui
+WEBHOOK_BOT_SERVER=https://tu-servidor.zulipchat.com
 
 # Configuración de Kafka
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
@@ -92,20 +127,63 @@ ollama serve
 
 ## Configuración de API Keys
 
-### Para Gemini API
+### Configuración Automática con Script
+
+Ejecuta el script para configuración guiada:
+
+```bash
+python setup_bot_keys.py
+```
+
+El script creará automáticamente el archivo `BOT_CREATION_INSTRUCTIONS.md` con instrucciones detalladas.
+
+### Configuración Manual
+
+#### Para Gemini API
 1. Ve a [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Crea una nueva API key
 3. Agrégala a tu archivo `.env` como `GEMINI_API_KEY`
 
-### Para Zulip Bot
-1. En tu servidor Zulip, ve a Settings -> Bots
-2. Crea un nuevo bot con tipo "Generic"
-3. Copia el email y API key del bot
-4. Agrégalos a tu archivo `.env`
+#### Para Zulip Bots (4 bots requeridos)
+
+**1. Bot de Resúmenes (Summary Bot)**
+- Tipo: Generic bot
+- Email: summary-bot@tu-servidor.zulipchat.com
+- Función: Generar y enviar resúmenes de mensajes
+
+**2. Bot de Análisis de Tópicos (Topic Analyzer Bot)**
+- Tipo: Generic bot
+- Email: topic-analyzer-bot@tu-servidor.zulipchat.com
+- Función: Analizar conversaciones y sugerir títulos
+
+**3. Bot de Monitoreo de Enfoque (Focus Monitor Bot)**
+- Tipo: Generic bot
+- Email: focus-monitor-bot@tu-servidor.zulipchat.com
+- Función: Monitorear enfoque de conversaciones
+
+**4. Bot de Webhook (Webhook Bot)**
+- Tipo: Generic bot
+- Email: webhook-bot@tu-servidor.zulipchat.com
+- Función: Recibir y procesar webhooks
+
+**Pasos para crear cada bot:**
+1. En tu servidor Zulip, ve a Settings -> Bots -> Add a new bot
+2. Selecciona "Generic bot"
+3. Ingresa el nombre y email correspondiente
+4. Crea el bot y copia la API key generada
+5. Agrégala a tu archivo `.env`
+
+**Permisos requeridos para todos los bots:**
+- Acceso a los streams relevantes
+- Capacidad de leer mensajes
+- Capacidad de enviar mensajes
+- Acceso a la API de Zulip
 
 ## Uso
 
 ### Iniciar el Sistema Completo
+
+#### Método 1: Usando variables de entorno (.env)
 ```bash
 # Iniciar Zulip y servicios relacionados
 docker-compose up -d
@@ -113,11 +191,25 @@ docker-compose up -d
 # Iniciar backend de Flask
 python app.py
 
-# Iniciar bots de resumen
-python summary_bot.py --zulip-email $ZULIP_EMAIL --zulip-api-key $ZULIP_API_KEY --zulip-server $ZULIP_SERVER
-
-# Iniciar procesador de temas
+# Iniciar bots (usará configuración del .env)
+python summary_bot.py
+python kafka_summary_processor.py
 python llm_topic_analyzer.py
+python focus_webhook.py
+python incoming_webhook.py
+```
+
+#### Método 2: Pasando parámetros manualmente
+```bash
+# Iniciar Zulip y servicios relacionados
+docker-compose up -d
+
+# Iniciar backend de Flask
+python app.py
+
+# Iniciar bots específicos con parámetros
+python summary_bot.py --zulip-email $SUMMARY_BOT_EMAIL --zulip-api-key $SUMMARY_BOT_API_KEY --zulip-server $SUMMARY_BOT_SERVER
+python llm_topic_analyzer.py --zulip-email $TOPIC_ANALYZER_BOT_EMAIL --zulip-api-key $TOPIC_ANALYZER_BOT_API_KEY --zulip-server $TOPIC_ANALYZER_BOT_SERVER
 ```
 
 ### Acceder a la Interfaz Web
@@ -132,15 +224,23 @@ python llm_topic_analyzer.py
 |-- summary_bot.py                  # Bot de notificación de resúmenes
 |-- llm_topic_analyzer.py           # Analizador de temas con IA
 |-- kafka_summary_processor.py      # Procesador de resúmenes Kafka
+|-- focus_webhook.py                # Webhook de monitoreo de enfoque
+|-- incoming_webhook.py             # Webhook entrante
+|-- contextual_focus_analyzer.py    # Analizador de contexto
+|-- setup_bot_keys.py               # Script de configuración automática
 |-- templates/
 |   |-- index.html                  # Frontend principal
-|   `-- index1.html                 # Interfaz de monitoreo Kafka
+|   |-- index1.html                 # Interfaz de monitoreo Kafka
+|   |-- topic_improver.html         # Interfaz de mejora de tópicos
+|   `-- message_recap.html          # Interfaz de resúmenes
 |-- requirements*.txt               # Dependencias Python
+|-- .env.example                    # Plantilla de configuración
+|-- .env                            # Variables de entorno (crear desde .env.example)
 |-- compose.yaml                    # Docker Compose configuration
-|-- .env                            # Variables de entorno
 |-- README.md                       # Este archivo
 |-- implementation.md               # Documentación técnica
-`-- ai.md                           # Uso de herramientas de IA
+|-- ai.md                           # Uso de herramientas de IA
+`-- BOT_CREATION_INSTRUCTIONS.md   # Instrucciones para crear bots (generado por script)
 ```
 
 ## Funcionalidades
@@ -150,12 +250,31 @@ python llm_topic_analyzer.py
 - Enlaces directos a mensajes originales
 - Soporte para múltiples modelos de IA (Gemini, Gemma2)
 - Configuración personalizable por usuario
+- Procesamiento asíncrono con Kafka
 
 ### Topic Title Improver
 - Detección de conversaciones desviadas (drifting discussions)
 - Sugerencias automáticas de títulos actualizados
 - Análisis de contexto y relevancia
 - Integración con flujo de trabajo de Zulip
+
+### Focus Monitoring
+- Monitoreo de enfoque en tiempo real
+- Análisis contextual de conversaciones
+- Detección de temas relevantes
+- Notificaciones automáticas
+
+### Webhook Integration
+- Recepción de webhooks externos
+- Procesamiento de eventos en tiempo real
+- Integración con sistemas third-party
+- Enrutamiento inteligente de mensajes
+
+### Automated Bot Management
+- Configuración automática de 4 bots especializados
+- Script de setup guiado
+- Gestión centralizada de API keys
+- Plantillas reutilizables
 
 ## Endpoints de API
 
