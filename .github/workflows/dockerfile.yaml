@@ -31,7 +31,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
       - name: Get commit SHA for current 11.x tip
         id: get-sha
@@ -40,7 +40,7 @@ jobs:
           echo "commit_sha=$COMMIT" >> $GITHUB_OUTPUT
 
       - name: Build
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
           tags: zulip/zulip-server:pr-${{ github.event.pull_request.number }}
@@ -50,7 +50,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/zulip/zulip-server:buildcache-linux-amd64
 
       - name: Upload image
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: docker-image
           path: /tmp/image.tar
@@ -65,7 +65,7 @@ jobs:
           persist-credentials: false
 
       - name: Run helm-docs
-        uses: losisin/helm-docs-github-action@2ccf3e77eb70dc80d62f8cc26f15d0a96b75fef4 # v1
+        uses: losisin/helm-docs-github-action@3a4528e97c49a5e83de6b78c50c61c8ee5c9f944 # v2.0.0
 
       - name: Run prettier over the re-generated docs
         run: npm install && npx prettier --write helm/zulip/README.md
@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
 
       - name: Download image
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
