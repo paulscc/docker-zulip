@@ -92,7 +92,7 @@ services:
       - "kafka:/var/lib/kafka/data:rw"
     attach: false
   zulip:
-    image: "ghcr.io/zulip/zulip-server:11.6-1"
+    image: "ghcr.io/zulip/zulip-server:12.1-0"
     restart: unless-stopped
     build:
       context: .
